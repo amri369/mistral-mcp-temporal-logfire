@@ -1,5 +1,4 @@
 from typing import Any
-from pydantic import ValidationError
 
 from mcp.client.streamable_http import streamablehttp_client
 from mcp import ClientSession
@@ -70,32 +69,15 @@ async def create_agent_async(params: MistralAgentParams) -> AgentCreationModel:
 
     return AgentCreationModel(id=agent.id)
 
-async def run_agent_async(params: AgentRunInputModel) -> Any:
+async def start_conversation_async(params: AgentRunInputModel) -> Any:
     client = get_client()
 
-    try:
-        response = await client.beta.conversations.start_async(
-            agent_id=params.id,
-            inputs=[{"role": "user", "content": params.inputs}],
-        )
-    except Exception as e:
-        logger.error(f"Failed to start agent conversation: {e}")
-        raise RuntimeError(f"Agent execution failed: {str(e)}") from e
-
-    if not response.outputs or len(response.outputs) == 0:
-        logger.error("Agent returned empty response")
-        raise ValueError("Agent returned no outputs")
+    response = await client.beta.conversations.start_async(
+        agent_id=params.id,
+        inputs=[{"role": "user", "content": params.inputs}],
+    )
 
     response = response.outputs[0].content
-
     model_class = RESPONSE_FORMAT_REGISTRY[params.response_format]
-
-    try:
-        response = model_class.model_validate_json(response)
-        return response
-
-    except ValidationError as e:
-        logger.error(f"Response validation failed: {e}")
-        raise ValidationError(
-            f"Agent response doesn't match expected schema for {params.response_format}"
-        ) from e
+    response = model_class.model_validate_json(response)
+    return response
