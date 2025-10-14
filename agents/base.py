@@ -106,6 +106,7 @@ async def start_conversation_async(params: AgentRunInputModel) -> Any:
                     'gen_ai.usage.input_tokens': response.usage.prompt_tokens,
                     'gen_ai.usage.output_tokens': response.usage.completion_tokens,
                     'gen_ai.conversation.id': response.conversation_id,
+                    'gen_ai.input.messages': params.inputs,
                     'gen_ai.output.messages': response.outputs,
                 }
             )
