@@ -3,6 +3,7 @@ from typing import Any
 from mcp.client.streamable_http import streamablehttp_client
 from mcp import ClientSession
 from mistralai import Mistral, MessageOutputEntry
+import logfire
 
 from models.agents import MistralAgentParams, AgentCreationModel, AgentRunInputModel, MistralAgentUpdateModel
 from models.structured_output import get_mistral_response_format, RESPONSE_FORMAT_REGISTRY
@@ -11,6 +12,11 @@ from config import settings
 from logger import get_logger
 
 logger = get_logger(__name__)
+if settings.logfire_token:
+    logfire.configure(
+        token=settings.logfire_token,
+        service_name="mistral-mcp-temporal"
+    )
 
 async def get_prompt(server_url: str, prompt_name: str) -> str:
     async with streamablehttp_client(server_url) as (read_stream, write_stream, get_session_id):
@@ -71,21 +77,39 @@ async def create_agent_async(params: MistralAgentParams) -> AgentCreationModel:
 
 async def start_conversation_async(params: AgentRunInputModel) -> Any:
     client = get_client()
+    with logfire.span(
+            "mistral.conversation.start",
+            agent_id=params.id,
+            response_format=params.response_format,
+    ) as span:
+        response = await client.beta.conversations.start_async(
+            agent_id=params.id,
+            inputs=params.inputs,
+        )
 
-    response = await client.beta.conversations.start_async(
-        agent_id=params.id,
-        inputs=params.inputs,
-    )
+        logfire.info(
+            'Mistral conversation complete',
+            **{
+                'gen_ai.system': 'mistral',
+                'gen_ai.request.model': params.id,  # agent_id
+                'gen_ai.response.model': response.outputs[-1].model if hasattr(response.outputs[-1],
+                                                                               'model') else 'unknown',
+                'gen_ai.usage.input_tokens': response.usage.prompt_tokens,
+                'gen_ai.usage.output_tokens': response.usage.completion_tokens,
+                'conversation_id': response.conversation_id,
+                'connector_tokens': response.usage.connector_tokens,
+            }
+        )
 
-    outputs = []
-    for output in response.outputs:
-        if isinstance(output, MessageOutputEntry):
-            outputs.append(output)
+        outputs = []
+        for output in response.outputs:
+            if isinstance(output, MessageOutputEntry):
+                outputs.append(output)
 
-    response = outputs[-1].content
-    model_class = RESPONSE_FORMAT_REGISTRY[params.response_format]
-    response = model_class.model_validate_json(response)
-    return response
+        response = outputs[-1].content
+        model_class = RESPONSE_FORMAT_REGISTRY[params.response_format]
+        response = model_class.model_validate_json(response)
+        return response
 
 async def update_agent_async(params: MistralAgentUpdateModel) -> None:
     client = get_client()

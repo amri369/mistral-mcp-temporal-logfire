@@ -39,5 +39,5 @@ uv run --env-file .env tasks/worker.py
 
 ```bash
 export PYTHONPATH=.
-uv run --env-file .env main.py
+uv run --env-file .env examples/main.py
 ```
