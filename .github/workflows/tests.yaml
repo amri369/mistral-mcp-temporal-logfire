@@ -33,4 +33,9 @@ jobs:
       - name: Install dependencies
         run: make sync
       - name: Run tests
+        env:
+          LOGFIRE_TOKEN=placeholder
+          MCP_SERVER_URL=http://localhost:9000
+          MISTRAL_API_KEY=placeholder
+          TEMPORAL_SERVER_URL=localhost:7233
         run: make tests
