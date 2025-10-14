@@ -15,8 +15,9 @@ logger = get_logger(__name__)
 if settings.logfire_token:
     logfire.configure(
         token=settings.logfire_token,
-        service_name="mistral-mcp-temporal"
+        service_name="mistral-mcp-temporal",
     )
+    logfire.with_settings(custom_scope_suffix='mistral_agents')
 
 async def get_prompt(server_url: str, prompt_name: str) -> str:
     async with streamablehttp_client(server_url) as (read_stream, write_stream, get_session_id):
@@ -78,9 +79,10 @@ async def create_agent_async(params: MistralAgentParams) -> AgentCreationModel:
 async def start_conversation_async(params: AgentRunInputModel) -> Any:
     client = get_client()
     with logfire.span(
-            "mistral.conversation.start",
+            "Mistral Agents trace: Agent workflow",
             agent_id=params.id,
             response_format=params.response_format,
+            _tags=["LLM"],
     ) as span:
         try:
             response = await client.beta.conversations.start_async(
@@ -88,24 +90,24 @@ async def start_conversation_async(params: AgentRunInputModel) -> Any:
                 inputs=params.inputs,
             )
 
-            logfire.info(
-                'Mistral conversation complete',
-                **{
-                    'gen_ai.system': 'mistral',
-                    'gen_ai.request.model': params.id,  # agent_id
-                    'gen_ai.response.model': response.outputs[-1].model if hasattr(response.outputs[-1],
-                                                                                   'model') else 'unknown',
-                    'gen_ai.usage.input_tokens': response.usage.prompt_tokens,
-                    'gen_ai.usage.output_tokens': response.usage.completion_tokens,
-                    'conversation_id': response.conversation_id,
-                    'connector_tokens': response.usage.connector_tokens,
-                }
-            )
-
             outputs = []
             for output in response.outputs:
                 if isinstance(output, MessageOutputEntry):
                     outputs.append(output)
+
+            model = outputs[-1].model
+            logfire.info(
+                f"Responses API with {model}",
+                **{
+                    'gen_ai.system': 'mistral',
+                    'gen_ai.agent.id': params.id,
+                    'gen_ai.response.model': model,
+                    'gen_ai.usage.input_tokens': response.usage.prompt_tokens,
+                    'gen_ai.usage.output_tokens': response.usage.completion_tokens,
+                    'gen_ai.conversation.id': response.conversation_id,
+                    'gen_ai.output.messages': response.outputs,
+                }
+            )
 
             response = outputs[-1].content
             model_class = RESPONSE_FORMAT_REGISTRY[params.response_format]
