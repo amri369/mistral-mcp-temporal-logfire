@@ -17,4 +17,4 @@ lint:
 	uv run ruff check
 
 tests:
-	uv run pytest
+	PYTHONPATH=. uv run pytest
