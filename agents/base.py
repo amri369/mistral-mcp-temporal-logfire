@@ -4,7 +4,7 @@ from mcp.client.streamable_http import streamablehttp_client
 from mcp import ClientSession
 from mistralai import Mistral
 
-from models.agents import MistralAgentParams, AgentCreationModel, AgentRunInputModel
+from models.agents import MistralAgentParams, AgentCreationModel, AgentRunInputModel, MistralAgentUpdateModel
 from models.structured_output import get_mistral_response_format, RESPONSE_FORMAT_REGISTRY
 
 from config import settings
@@ -81,3 +81,7 @@ async def start_conversation_async(params: AgentRunInputModel) -> Any:
     model_class = RESPONSE_FORMAT_REGISTRY[params.response_format]
     response = model_class.model_validate_json(response)
     return response
+
+async def update_agent_async(params: MistralAgentUpdateModel) -> None:
+    client = get_client()
+    await client.beta.agents.update_async(agent_id=params.id, handoffs=params.handoffs)

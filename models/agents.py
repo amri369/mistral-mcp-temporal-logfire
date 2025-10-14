@@ -1,4 +1,4 @@
-from typing import Literal, List
+from typing import Dict, Literal, List
 from pydantic import BaseModel
 
 from .structured_output import ResponseFormatName
@@ -12,11 +12,11 @@ class AgentCreationModel(BaseModel):
     id: str
 
 class AgentRunInputModel(BaseModel):
-    id: str
-    inputs: str
-    response_format: ResponseFormatName | None = None
+    id:                 str
+    inputs:             str
+    response_format:    ResponseFormatName | None = None
 
-class MistralAgentParams(BaseModel):
+class MistralAgentStaticParams(BaseModel):
     model:              str
     name:               str
     mcp_server_url:     str
@@ -24,5 +24,20 @@ class MistralAgentParams(BaseModel):
     description:        str | None = None
     temperature:        float = 0.
     max_tokens:         int = 2048
-    tools:              List[MistralTools] | None = None
+    tools:              List[Dict[str, MistralTools]] | None = None
     response_format:    ResponseFormatName | None = None
+
+class MistralAgentDynamicParams(BaseModel):
+    handoffs:           List[str] | None = None
+
+class MistralAgentUpdateModel(AgentCreationModel, MistralAgentDynamicParams):
+    ...
+
+class MistralAgentParams(MistralAgentDynamicParams, MistralAgentStaticParams):
+    ...
+
+class FinancialAgentsIDsModel(BaseModel):
+    planner_agent_id:   str
+    search_agent_id:    str
+    writer_agent_id:    str
+    verifier_agent_id:  str
