@@ -82,34 +82,39 @@ async def start_conversation_async(params: AgentRunInputModel) -> Any:
             agent_id=params.id,
             response_format=params.response_format,
     ) as span:
-        response = await client.beta.conversations.start_async(
-            agent_id=params.id,
-            inputs=params.inputs,
-        )
+        try:
+            response = await client.beta.conversations.start_async(
+                agent_id=params.id,
+                inputs=params.inputs,
+            )
 
-        logfire.info(
-            'Mistral conversation complete',
-            **{
-                'gen_ai.system': 'mistral',
-                'gen_ai.request.model': params.id,  # agent_id
-                'gen_ai.response.model': response.outputs[-1].model if hasattr(response.outputs[-1],
-                                                                               'model') else 'unknown',
-                'gen_ai.usage.input_tokens': response.usage.prompt_tokens,
-                'gen_ai.usage.output_tokens': response.usage.completion_tokens,
-                'conversation_id': response.conversation_id,
-                'connector_tokens': response.usage.connector_tokens,
-            }
-        )
+            logfire.info(
+                'Mistral conversation complete',
+                **{
+                    'gen_ai.system': 'mistral',
+                    'gen_ai.request.model': params.id,  # agent_id
+                    'gen_ai.response.model': response.outputs[-1].model if hasattr(response.outputs[-1],
+                                                                                   'model') else 'unknown',
+                    'gen_ai.usage.input_tokens': response.usage.prompt_tokens,
+                    'gen_ai.usage.output_tokens': response.usage.completion_tokens,
+                    'conversation_id': response.conversation_id,
+                    'connector_tokens': response.usage.connector_tokens,
+                }
+            )
 
-        outputs = []
-        for output in response.outputs:
-            if isinstance(output, MessageOutputEntry):
-                outputs.append(output)
+            outputs = []
+            for output in response.outputs:
+                if isinstance(output, MessageOutputEntry):
+                    outputs.append(output)
 
-        response = outputs[-1].content
-        model_class = RESPONSE_FORMAT_REGISTRY[params.response_format]
-        response = model_class.model_validate_json(response)
-        return response
+            response = outputs[-1].content
+            model_class = RESPONSE_FORMAT_REGISTRY[params.response_format]
+            response = model_class.model_validate_json(response)
+            return response
+
+        except Exception as e:
+            span.record_exception(e)
+            raise
 
 async def update_agent_async(params: MistralAgentUpdateModel) -> None:
     client = get_client()
