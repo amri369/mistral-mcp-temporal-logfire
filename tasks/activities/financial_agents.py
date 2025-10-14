@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from typing import Dict
 
 from mistralai import SDKError
 from temporalio import activity
@@ -23,7 +23,7 @@ async def update_agent_activity(params: MistralAgentUpdateModel) -> None:
         raise http_response_to_application_error(e.raw_response)
 
 @activity.defn
-async def start_conversation_activity(params: AgentRunInputModel):
+async def start_conversation_activity(params: AgentRunInputModel) -> Dict:
     try:
         response = await start_conversation_async(params)
         return response

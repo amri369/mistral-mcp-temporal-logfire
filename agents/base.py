@@ -2,7 +2,7 @@ from typing import Any
 
 from mcp.client.streamable_http import streamablehttp_client
 from mcp import ClientSession
-from mistralai import Mistral
+from mistralai import Mistral, MessageOutputEntry
 
 from models.agents import MistralAgentParams, AgentCreationModel, AgentRunInputModel, MistralAgentUpdateModel
 from models.structured_output import get_mistral_response_format, RESPONSE_FORMAT_REGISTRY
@@ -74,13 +74,15 @@ async def start_conversation_async(params: AgentRunInputModel) -> Any:
 
     response = await client.beta.conversations.start_async(
         agent_id=params.id,
-        inputs=[{"role": "user", "content": params.inputs}],
+        inputs=params.inputs,
     )
 
-    response = response.outputs[0].content
-    model_class = RESPONSE_FORMAT_REGISTRY[params.response_format]
-    response = model_class.model_validate_json(response)
-    return response
+    for output in response.outputs:
+        if isinstance(output, MessageOutputEntry):
+            response = output.content
+            model_class = RESPONSE_FORMAT_REGISTRY[params.response_format]
+            response = model_class.model_validate_json(response)
+            return response
 
 async def update_agent_async(params: MistralAgentUpdateModel) -> None:
     client = get_client()
