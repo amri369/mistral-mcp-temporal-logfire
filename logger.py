@@ -1,6 +1,5 @@
 import logging
 import logging.config
-from typing import Optional
 
 LOG_LEVEL = "INFO"  # Could be from settings
 

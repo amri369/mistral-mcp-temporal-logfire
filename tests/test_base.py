@@ -1,8 +1,6 @@
-# tests/test_base.py
 import pytest
 from unittest.mock import AsyncMock, Mock, patch, MagicMock
 from mistralai import Mistral, MessageOutputEntry
-from mcp.types import Prompt, TextContent, PromptMessage
 
 from agents.base import (
     get_prompt,
@@ -149,7 +147,6 @@ def test_get_client_success(mock_settings):
     mock_settings.mistral_api_key = "test_key"
 
     with patch("agents.base.Mistral") as mock_mistral:
-        client = get_client()
         mock_mistral.assert_called_once_with(api_key="test_key")
 
 
