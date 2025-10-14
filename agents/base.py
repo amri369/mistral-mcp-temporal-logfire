@@ -77,12 +77,15 @@ async def start_conversation_async(params: AgentRunInputModel) -> Any:
         inputs=params.inputs,
     )
 
+    outputs = []
     for output in response.outputs:
         if isinstance(output, MessageOutputEntry):
-            response = output.content
-            model_class = RESPONSE_FORMAT_REGISTRY[params.response_format]
-            response = model_class.model_validate_json(response)
-            return response
+            outputs.append(output)
+
+    response = outputs[-1].content
+    model_class = RESPONSE_FORMAT_REGISTRY[params.response_format]
+    response = model_class.model_validate_json(response)
+    return response
 
 async def update_agent_async(params: MistralAgentUpdateModel) -> None:
     client = get_client()

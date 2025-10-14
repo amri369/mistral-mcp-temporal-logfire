@@ -60,6 +60,6 @@ AGENTS_PARAMS = {
         mcp_server_url=settings.financials_mcp_url,
         prompt_name="writer_prompt",
         response_format="FinancialReportData",
-        temperature=0.3
+        temperature=0.
     ),
 }

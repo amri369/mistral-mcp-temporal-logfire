@@ -13,13 +13,18 @@ with workflow.unsafe.imports_passed_through():
     from models.agents import MistralAgentUpdateModel, AgentRunInputModel
     from models.structured_output import (
         FinancialSearchPlan,
+        FinancialReportData,
+        VerificationResult,
         FinancialReportWorkflowOutput,
     )
+    from logger import get_logger
+    logger = get_logger(__name__)
 
 @workflow.defn
 class FinancialResearchWorkflow:
     @workflow.run
     async def run(self, query: str):
+        logger.info("Initialize agents started")
         agents = await asyncio.gather(
             workflow.execute_activity(create_agent_activity, AGENTS_PARAMS["FUNDAMENTALS"], **ACTIVITY_OPTS),
             workflow.execute_activity(create_agent_activity, AGENTS_PARAMS["PLANNER"], **ACTIVITY_OPTS),
@@ -30,6 +35,7 @@ class FinancialResearchWorkflow:
         )
 
         fundamental_agent, planner_agent, risk_agent, search_agent, verifier_agent, writer_agent = agents
+        logger.info("Initialize agents finished")
 
         await workflow.execute_activity(
             update_agent_activity,
@@ -40,6 +46,7 @@ class FinancialResearchWorkflow:
             **ACTIVITY_OPTS
         )
 
+        logger.info("Planner agent started")
         search_plan = await workflow.execute_activity(
             start_conversation_activity,
             AgentRunInputModel(
@@ -51,7 +58,9 @@ class FinancialResearchWorkflow:
         )
 
         search_plan = FinancialSearchPlan(**search_plan)
+        logger.info("Planner agent finished")
 
+        logger.info("Search agents started")
         search_activities = []
         for search_item in search_plan.searches:
             payload = AgentRunInputModel(
@@ -68,6 +77,43 @@ class FinancialResearchWorkflow:
             )
 
         search_results = await asyncio.gather(*search_activities)
-        print(search_results)
+        logger.info("Search agents finished")
 
-        return search_results
+        logger.info("Writer agents started")
+        report = await workflow.execute_activity(
+            start_conversation_activity,
+            AgentRunInputModel(
+                id=writer_agent.id,
+                inputs=str(search_results),
+                response_format=AGENTS_PARAMS["WRITER"].response_format
+            ),
+            **ACTIVITY_OPTS,
+        )
+        report = FinancialReportData(**report)
+        logger.info("Writer agent finished")
+
+        logger.info("Verifier agents started")
+        verification = await workflow.execute_activity(
+            start_conversation_activity,
+            AgentRunInputModel(
+                id=verifier_agent.id,
+                inputs=str(report),
+                response_format=AGENTS_PARAMS["VERIFIER"].response_format
+            ),
+            **ACTIVITY_OPTS,
+        )
+        verification = VerificationResult(**verification)
+        logger.info("Verifier agent finished")
+
+        print("\n\n=====REPORT=====\n\n")
+        print(f"Report:\n{report.markdown_report}")
+        print("\n\n=====FOLLOW UP QUESTIONS=====\n\n")
+        print("\n".join(report.follow_up_questions))
+        print("\n\n=====VERIFICATION=====\n\n")
+        print(verification.issues)
+
+        return FinancialReportWorkflowOutput(
+            search_plan=search_plan,
+            report=report,
+            verification=verification,
+        )
