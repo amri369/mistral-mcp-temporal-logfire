@@ -201,6 +201,8 @@ def test_mistral_format_has_all_recursive_additional_properties():
     # Check root level
     assert schema["additionalProperties"] is False
 
-    # Check nested searches array items
-    searches_items = schema["properties"]["searches"]["items"]
-    assert searches_items["additionalProperties"] is False
+    # Check nested objects in $defs (Pydantic uses references)
+    if "$defs" in schema:
+        for def_name, def_schema in schema["$defs"].items():
+            if def_schema.get("type") == "object":
+                assert def_schema["additionalProperties"] is False, f"{def_name} missing additionalProperties"
