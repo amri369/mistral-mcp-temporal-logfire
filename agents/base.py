@@ -12,12 +12,13 @@ from config import settings
 from logger import get_logger
 
 logger = get_logger(__name__)
+
 if settings.logfire_token:
     logfire.configure(
         token=settings.logfire_token,
         service_name="mistral-mcp-temporal",
     )
-    logfire.with_settings(custom_scope_suffix='mistral_agents')
+    logfire = logfire.with_settings(custom_scope_suffix='mistral_agents')
 
 async def get_prompt(server_url: str, prompt_name: str) -> str:
     async with streamablehttp_client(server_url) as (read_stream, write_stream, get_session_id):
