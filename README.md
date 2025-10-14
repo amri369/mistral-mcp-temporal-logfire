@@ -34,3 +34,10 @@ Ensure that all your environment variables reside at file .env.
 export PYTHONPATH=.
 uv run --env-file .env tasks/worker.py
 ```
+
+# 5. Start the financial analyst agent
+
+```bash
+export PYTHONPATH=.
+uv run --env-file .env main.py
+```

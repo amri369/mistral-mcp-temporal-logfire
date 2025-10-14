@@ -69,3 +69,8 @@ def get_mistral_response_format(format_name: ResponseFormatName) -> Dict[str, An
             "strict": True
         }
     }
+
+class FinancialReportWorkflowOutput(BaseModel):
+    search_plan: FinancialSearchPlan
+    report: FinancialReportData
+    verification: VerificationResult

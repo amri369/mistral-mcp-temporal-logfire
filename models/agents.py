@@ -36,8 +36,3 @@ class MistralAgentUpdateModel(AgentCreationModel, MistralAgentDynamicParams):
 class MistralAgentParams(MistralAgentDynamicParams, MistralAgentStaticParams):
     ...
 
-class FinancialAgentsIDsModel(BaseModel):
-    planner_agent_id:   str
-    search_agent_id:    str
-    writer_agent_id:    str
-    verifier_agent_id:  str
