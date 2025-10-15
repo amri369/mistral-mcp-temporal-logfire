@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from fastapi import APIRouter, HTTPException, Request, status
 
-from models.agents import QueryModel
+from models.agents import QueryModel, WorkflowIDModel
 from models.structured_output import FinancialReportWorkflowOutput
 from tasks.workflows.financial_agents import FinancialResearchWorkflow
 from config import settings
@@ -12,6 +12,7 @@ router = APIRouter()
 
 @router.post(
     "/start-agent-workflow",
+    response_model=WorkflowIDModel,
 )
 async def start_agent_workflow(
         params: QueryModel,
@@ -20,7 +21,7 @@ async def start_agent_workflow(
     try:
         client = request.app.state.temporal_client
         workflow_id = f"financial-research-workflow-{uuid4()}"
-        response = await client.start_workflow(
+        await client.start_workflow(
             FinancialResearchWorkflow.run,
             params,
             id=workflow_id,
@@ -32,7 +33,7 @@ async def start_agent_workflow(
             detail=str(e)
         )
 
-    return {"workflow_id": workflow_id}
+    return WorkflowIDModel(workflow_id=workflow_id)
 
 @router.get(
     "/get-agent-workflow-result",
