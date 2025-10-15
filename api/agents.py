@@ -11,7 +11,7 @@ from config import settings
 router = APIRouter()
 
 @router.post(
-    "start-agent-workflow",
+    "/start-agent-workflow",
 )
 async def start_agent_workflow(
         params: QueryModel,
@@ -35,7 +35,7 @@ async def start_agent_workflow(
     return {"workflow_id": workflow_id}
 
 @router.get(
-    "get-agent-workflow-result",
+    "/get-agent-workflow-result",
     response_model=FinancialReportWorkflowOutput | None,
 )
 async def get_agent_workflow_result(
