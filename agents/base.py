@@ -2,7 +2,7 @@ from typing import Any
 
 from mcp.client.streamable_http import streamablehttp_client
 from mcp import ClientSession
-from mistralai import Mistral, MessageOutputEntry
+from mistralai import Mistral, MessageOutputEntry, Agent
 import logfire
 
 from models.agents import MistralAgentParams, AgentCreationModel, AgentRunInputModel, MistralAgentUpdateModel
@@ -77,12 +77,16 @@ async def create_agent_async(params: MistralAgentParams) -> AgentCreationModel:
 
     return AgentCreationModel(id=agent.id)
 
+async def get_agent_async(params: AgentCreationModel) -> Agent:
+    client = get_client()
+    agent = await client.beta.agents.get_async(agent_id=params.id)
+    return agent
+
 async def start_conversation_async(params: AgentRunInputModel) -> Any:
     client = get_client()
     with logfire.span(
             "Mistral Agents trace: Agent workflow",
             agent_id=params.id,
-            response_format=params.response_format,
             _tags=["LLM"],
     ) as span:
         try:
@@ -97,17 +101,22 @@ async def start_conversation_async(params: AgentRunInputModel) -> Any:
                     outputs.append(output)
 
             model = outputs[-1].model
+            agent = await get_agent_async(AgentCreationModel(id=params.id))
             logfire.info(
                 f"Responses API with {model}",
                 **{
                     'gen_ai.system': 'mistral',
                     'gen_ai.agent.id': params.id,
+                    'gen_ai.agent.description': agent.description,
+                    'gen_ai.agent.name': agent.name,
+                    'gen_ai.system_instructions': agent.instructions,
                     'gen_ai.response.model': model,
                     'gen_ai.usage.input_tokens': response.usage.prompt_tokens,
                     'gen_ai.usage.output_tokens': response.usage.completion_tokens,
                     'gen_ai.conversation.id': response.conversation_id,
                     'gen_ai.input.messages': params.inputs,
                     'gen_ai.output.messages': response.outputs,
+                    'gen_ai.output.type': params.response_format
                 }
             )
 
