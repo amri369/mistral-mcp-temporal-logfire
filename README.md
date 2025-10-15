@@ -1,7 +1,7 @@
 # Durable Stateful Agents with Mistral + Temporal + MCP
 
 <p align="left">
-  <img src="assets/architecture.png" alt="System Architecture" width="50%">
+  <img src="assets/architecture.png" alt="System Architecture" width="100%">
 </p>
 
 Production-ready agent architecture combining **Mistral's server-side stateful agents** with **Temporal's durable execution** and **MCP's standardized tool interface**. This setup handles long-running tasks with automatic retries and maintains conversation state across failures.
@@ -84,7 +84,7 @@ uv run --env-file .env examples/main.py
 ## Observability in Action
 
 <p align="left">
-  <img src="assets/logfire-fastapi-mistral.png" alt="Logfire Traces" width="50%">
+  <img src="assets/logfire-fastapi-mistral.png" alt="Logfire Traces" width="100%">
 </p>
 
 The screenshot above shows a financial query about Nvidia triggered via FastAPI. **Logfire** captures the entire execution path:
@@ -94,7 +94,7 @@ The screenshot above shows a financial query about Nvidia triggered via FastAPI.
 - **Automatic retry behavior**: One Mistral API call failed due to a structured output parsing error. Temporal automatically retried until it succeeded.
 
 <p align="left">
-  <img src="assets/temporal.png" alt="Temporal Event History" width="50%">
+  <img src="assets/temporal.png" alt="Temporal Event History" width="100%">
 </p>
 
 The Temporal UI shows the workflow's event history, including the `start_conversation_activity` that failed once (Attempt 2) before succeeding. 
