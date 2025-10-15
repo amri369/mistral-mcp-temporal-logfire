@@ -36,3 +36,5 @@ class MistralAgentUpdateModel(AgentCreationModel, MistralAgentDynamicParams):
 class MistralAgentParams(MistralAgentDynamicParams, MistralAgentStaticParams):
     ...
 
+class QueryModel(BaseModel):
+    query: str

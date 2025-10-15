@@ -26,6 +26,11 @@ brew install temporal
 temporal server start-dev
 ```
 
+```
+export PYTHONPATH=.
+uv run uvicorn api.main:app --reload
+```
+
 # 4. Start a Temporal worker
 Execute the following command to start a worker to run the examples. 
 Ensure that all your environment variables reside at file .env.
