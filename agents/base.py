@@ -90,6 +90,12 @@ async def start_conversation_async(params: AgentRunInputModel) -> Any:
             _tags=["LLM"],
     ) as span:
         try:
+            try:
+                agent = await get_agent_async(AgentCreationModel(id=params.id))
+            except Exception as e:
+                logger.error(f"Failed to fetch agent metadata: {e}")
+                raise
+
             response = await client.beta.conversations.start_async(
                 agent_id=params.id,
                 inputs=params.inputs,
@@ -101,7 +107,6 @@ async def start_conversation_async(params: AgentRunInputModel) -> Any:
                     outputs.append(output)
 
             model = outputs[-1].model
-            agent = await get_agent_async(AgentCreationModel(id=params.id))
             logfire.info(
                 f"Responses API with {model}",
                 **{
