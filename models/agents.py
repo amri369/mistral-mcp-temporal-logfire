@@ -36,3 +36,8 @@ class MistralAgentUpdateModel(AgentCreationModel, MistralAgentDynamicParams):
 class MistralAgentParams(MistralAgentDynamicParams, MistralAgentStaticParams):
     ...
 
+class QueryModel(BaseModel):
+    query: str
+
+class WorkflowIDModel(BaseModel):
+    workflow_id: str

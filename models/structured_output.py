@@ -1,4 +1,4 @@
-from typing import Any, Dict, Literal, List
+from typing import Any, Dict, Literal
 from pydantic import BaseModel
 
 class AnalysisSummary(BaseModel):

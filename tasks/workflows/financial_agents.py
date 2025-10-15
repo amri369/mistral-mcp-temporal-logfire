@@ -10,7 +10,7 @@ with workflow.unsafe.imports_passed_through():
         start_conversation_activity
     )
     from agents.agents_params import AGENTS_PARAMS
-    from models.agents import MistralAgentUpdateModel, AgentRunInputModel
+    from models.agents import MistralAgentUpdateModel, AgentRunInputModel, QueryModel
     from models.structured_output import (
         FinancialSearchPlan,
         FinancialReportData,
@@ -22,9 +22,13 @@ with workflow.unsafe.imports_passed_through():
 
 @workflow.defn
 class FinancialResearchWorkflow:
+    def __init__(self):
+        self.final_report = None
+
     @workflow.run
-    async def run(self, query: str):
-        logger.info("Initialize agents started")
+    async def run(self, query: QueryModel):
+        query = query.query
+        logger.info("Create agents started")
         agents = await asyncio.gather(
             workflow.execute_activity(create_agent_activity, AGENTS_PARAMS["FUNDAMENTALS"], **ACTIVITY_OPTS),
             workflow.execute_activity(create_agent_activity, AGENTS_PARAMS["PLANNER"], **ACTIVITY_OPTS),
@@ -35,7 +39,7 @@ class FinancialResearchWorkflow:
         )
 
         fundamental_agent, planner_agent, risk_agent, search_agent, verifier_agent, writer_agent = agents
-        logger.info("Initialize agents finished")
+        logger.info("Create agents finished")
 
         await workflow.execute_activity(
             update_agent_activity,
@@ -112,8 +116,14 @@ class FinancialResearchWorkflow:
         print("\n\n=====VERIFICATION=====\n\n")
         print(verification.issues)
 
-        return FinancialReportWorkflowOutput(
+        self.final_report = FinancialReportWorkflowOutput(
             search_plan=search_plan,
             report=report,
             verification=verification,
         )
+
+        return self.final_report
+
+    @workflow.query
+    def get_final_report(self):
+        return self.final_report

@@ -1,6 +1,5 @@
 import asyncio
 
-import logfire
 from temporalio.client import Client
 from temporalio.worker import Worker
 
@@ -13,9 +12,6 @@ from tasks.activities.financial_agents import (
 from tasks.workflows.financial_agents import FinancialResearchWorkflow
 from logger import get_logger
 logger = get_logger(__name__)
-
-if settings.logfire_token:
-    logfire.configure(token=settings.logfire_token)
 
 async def main():
     client = await Client.connect(

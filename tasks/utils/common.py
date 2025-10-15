@@ -1,6 +1,9 @@
 from datetime import timedelta
 
 from temporalio.common import RetryPolicy
+from temporalio.client import Client
+
+from config import settings
 
 RETRY_POLICY = RetryPolicy(
     initial_interval=timedelta(seconds=2),
@@ -13,3 +16,9 @@ ACTIVITY_OPTS = dict(
     schedule_to_close_timeout=timedelta(seconds=60),
     retry_policy=RETRY_POLICY,
 )
+
+async def get_temporal_client():
+    client = await Client.connect(
+        settings.temporal_server_url,
+    )
+    return client

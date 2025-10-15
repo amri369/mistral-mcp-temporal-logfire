@@ -1,4 +1,11 @@
 from mcp.server.fastmcp import FastMCP
+import logfire
+
+from config import settings
+
+if settings.logfire_token:
+    logfire.configure(token=settings.logfire_token, service_name='server')
+    logfire.instrument_mcp()
 
 mcp = FastMCP("Financial Research Server")
 
