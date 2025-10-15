@@ -1,7 +1,7 @@
 # Durable Stateful Agents with Mistral + Temporal + MCP
 
 <p align="left">
-  <img src="assets/architecture.png" alt="System Architecture" width="35%">
+  <img src="assets/architecture.png" alt="System Architecture" width="50%">
 </p>
 
 Production-ready agent architecture combining **Mistral's server-side stateful agents** with **Temporal's durable execution** and **MCP's standardized tool interface**. This setup handles long-running tasks, automatic retries, and maintains conversation state across failures.
@@ -70,7 +70,6 @@ uv run --env-file .env tasks/worker.py
 ```
 
 ### 6. Test the Agent
-**CLI:**
 ```bash
 export PYTHONPATH=.
 uv run --env-file .env examples/main.py
