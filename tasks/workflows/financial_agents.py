@@ -162,7 +162,7 @@ class FinancialResearchWorkflow:
         print("\n\n=====FOLLOW UP QUESTIONS=====\n\n")
         print("\n".join(report.follow_up_questions))
         print("\n\n=====PRICES ANALYSIS=====\n\n")
-        print(prices_analysis.model_dump_json())
+        print(price_result.model_dump_json())
         print("\n\n=====VERIFICATION=====\n\n")
         print(verification.issues)
 
@@ -172,7 +172,7 @@ class FinancialResearchWorkflow:
             verification=verification,
             risk_analysis=risk_result,
             fundamentals_analysis=fundamentals_result,
-            price_analysis=prices_analysis,
+            price_analysis=price_result,
         )
 
         return self.final_report

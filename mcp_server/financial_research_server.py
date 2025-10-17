@@ -53,7 +53,6 @@ def verifier_prompt():
     "no unsupported claims. Point out any issues or uncertainties."
 )
 
-
 @mcp.prompt()
 def writer_prompt():
     return (
@@ -66,17 +65,12 @@ def writer_prompt():
         "Your task is to:\n"
         "1. Synthesize these payloads into a long-form markdown report (minimum 3-5 sections)\n"
         "2. Create a concise executive summary highlighting key investment insights\n"
-        "3. Include price visualizations using Mermaid charts or ASCII art when price data is provided\n"
-        "4. Integrate fundamental metrics and risk assessments cohesively\n"
-        "5. Provide actionable follow-up questions for deeper analysis\n\n"
+        "3. Integrate price action, fundamental metrics, and risk assessments cohesively\n"
+        "4. Provide actionable follow-up questions for deeper analysis\n\n"
 
-        "Structure your report with:\n"
-        "- Executive Summary (2-3 key takeaways)\n"
-        "- Price Action & Technical View (with visualization if data available)\n"
-        "- Fundamental Analysis (financial health, valuation)\n"
-        "- Risk Assessment (key risks and mitigations)\n"
-        "- Conclusion & Recommendations\n"
-        "- Follow-up Questions\n\n"
+        "**IMPORTANT**: Do not provide investment advice. Present objective analysis and data-driven insights "
+        "without making buy/sell/hold recommendations. Frame conclusions as informational observations, not "
+        "financial guidance.\n\n"
 
         "If any agent payload is missing or incomplete, note this clearly and work with available data. "
         "You may call additional analysis tools (e.g., fundamentals_analysis, risk_analysis) if deeper "

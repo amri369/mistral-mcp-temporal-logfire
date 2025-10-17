@@ -22,6 +22,10 @@ def price_analyst_prompt():
         "   - Recent trend (up/down, percentage change)\n"
         "   - Key observations\n"
         "Keep your analysis under 3 paragraphs."
+
+        "**Data Retrieval**: Use the available MCP tools to fetch current prices and historical price data "
+        "as needed to complement the agent payloads. This ensures your report contains the most up-to-date "
+        "market information.\n\n"
     )
 
 @mcp.tool()
