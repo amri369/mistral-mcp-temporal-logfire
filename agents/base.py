@@ -5,7 +5,7 @@ from mcp import ClientSession
 from mistralai import Mistral, MessageOutputEntry, Agent
 import logfire
 
-from models.agents import MistralAgentParams, AgentCreationModel, AgentRunInputModel, MistralAgentUpdateModel
+from models.agents import MistralAgentParams, AgentCreationModel, AgentRunInputModel
 from models.structured_output import get_mistral_response_format, RESPONSE_FORMAT_REGISTRY
 
 from config import settings
@@ -131,7 +131,3 @@ async def start_conversation_async(params: AgentRunInputModel) -> Any:
         except Exception as e:
             span.record_exception(e)
             raise
-
-async def update_agent_async(params: MistralAgentUpdateModel) -> None:
-    client = get_client()
-    await client.beta.agents.update_async(agent_id=params.id, handoffs=params.handoffs)

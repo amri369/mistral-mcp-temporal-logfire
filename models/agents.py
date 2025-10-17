@@ -30,9 +30,6 @@ class MistralAgentStaticParams(BaseModel):
 class MistralAgentDynamicParams(BaseModel):
     handoffs:           List[str] | None = None
 
-class MistralAgentUpdateModel(AgentCreationModel, MistralAgentDynamicParams):
-    ...
-
 class MistralAgentParams(MistralAgentDynamicParams, MistralAgentStaticParams):
     ...
 

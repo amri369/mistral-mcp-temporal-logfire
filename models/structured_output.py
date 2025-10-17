@@ -1,4 +1,4 @@
-from typing import Any, Dict, Literal
+from typing import Any, Dict, Literal, List
 from pydantic import BaseModel
 
 class AnalysisSummary(BaseModel):
@@ -42,6 +42,15 @@ RESPONSE_FORMAT_REGISTRY = {
 
 ResponseFormatName = Literal[*tuple(RESPONSE_FORMAT_REGISTRY.keys())]
 
+class WriterAgentInputModel(BaseModel):
+    """Input for Writer Agent to synthesize fundamentals and risk analyses into a final report."""
+
+    fundamentals_analysis: AnalysisSummary
+    """Financial health, revenue trends, and market position analysis."""
+
+    risk_analysis: AnalysisSummary
+    """Risk assessment, scores, and mitigation factors."""
+
 def _add_additional_properties_false(schema_dict: Dict[str, Any]) -> Dict[str, Any]:
     """Recursively add additionalProperties: False to all objects in schema."""
     if isinstance(schema_dict, dict):
@@ -74,3 +83,10 @@ class FinancialReportWorkflowOutput(BaseModel):
     search_plan: FinancialSearchPlan
     report: FinancialReportData
     verification: VerificationResult
+
+def format_search_results(results: List[AnalysisSummary]) -> str:
+    """Format search results as clean, readable text for the agent."""
+    formatted = "# Analysis Results\n\n"
+    for i, result in enumerate(results, 1):
+        formatted += f"## Finding {i}\n{result.summary}\n\n"
+    return formatted.strip()
