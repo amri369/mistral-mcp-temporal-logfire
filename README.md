@@ -1,7 +1,5 @@
 # Durable Stateful Agents with Mistral + Temporal + MCP
 
-**Production-grade agent orchestration for long-running tasks that don't fail.**
-
 LLM agents break on multi-step workflows. API timeouts kill progress. Conversation state gets lost. Manual retry logic is brittle. This architecture solves it:
 
 - **Mistral Agent API** manages conversation state server-side (no history passing)
@@ -14,6 +12,7 @@ Built for critical workflows where tasks can take minutes and failures are expen
 <p align="left">
   <img src="assets/architecture.png" alt="System Architecture" width="100%">
 </p>
+**Production-grade agent orchestration for long-running tasks that don't fail.**
 
 ## Evolution from Previous Work
 
