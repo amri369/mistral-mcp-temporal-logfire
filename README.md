@@ -17,7 +17,7 @@ Production-ready agent architecture combining **Mistral's server-side stateful a
 **Key Design Decisions:**
 1. **Mistral hosts agent state server-side** – Unlike traditional stateless LLM APIs, Mistral's Agent API maintains agent definitions and conversation history on their servers. You register agents once, then interact via `agent_id`.
 2. **Temporal workflows orchestrate agent interactions** – Workflow state persists locally while Mistral manages agent and conversation state remotely. Workflows survive crashes and coordinate multi-step agent tasks.
-3. **Prompt registry via MCP server** – Temporal activities create agents with instructions fetched from a local MCP server. Instruction prompts are separated from code.
+3. **Prompt and tools access via MCP server** – Temporal activities create agents with instructions fetched from a local MCP server. Instruction prompts are separated from code. Agents can run available tools server side.
 4. **FastAPI orchestrates requests** – Receives user queries, triggers Temporal workflows, and polls workflow results using Temporal query handles.
 5. **Logfire instruments the entire request path** – Captures FastAPI route traces, Mistral API calls with token usage, and correlates them in a unified trace view.
 
@@ -112,6 +112,6 @@ This demonstrates how Temporal's durable execution handles transient failures wi
 
 **Temporal** handles transient failures (API timeouts, rate limits) with automatic retries and orchestrates complex multi-agent workflows. Workflow state persists across process restarts.
 
-**MCP** decouples tool implementation from agent logic. Swap tool providers without changing agent code. Standardized interface for tool discovery and execution.
+**MCP** decouples tool implementation from agent logic. Swap tool providers without changing agent code. Standardized interface for tool discovery and execution, and prompts.
 
 **Logfire** provides a unified view of workflow executions, LLM calls (with prompts, completions, token counts), and FastAPI request lifecycle—critical for debugging production issues.
