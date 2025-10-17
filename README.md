@@ -1,18 +1,28 @@
-Following my previous project about [durable agents with Temporal](https://temporal.io/code-exchange/mcp-temporal-durable-agents), I decided to create an enhanced version. 
-What's new:
-- I use Mistral stateful Agents API. This is a very interesting feature (still in beta) that manages agents status and memory server side
-- Tracing agents status and transactions logging with Logfire for a better observability
-- Add a [Temporal retry mechanism](https://docs.temporal.io/ai-cookbook/http-retry-enhancement-python) to only consider retriable failures during agents execution
-- Spinoff a FastAPI server to run Temporal workflows and poll results (very useful for Frontend clients)
-- Add tools to a dedicated MCP server using Yahoo Finance API
-
 # Durable Stateful Agents with Mistral + Temporal + MCP
+
+**Production-grade agent orchestration for long-running tasks that don't fail.**
+
+LLM agents break on multi-step workflows. API timeouts kill progress. Conversation state gets lost. Manual retry logic is brittle. This architecture solves it:
+
+- **Mistral Agent API** manages conversation state server-side (no history passing)
+- **Temporal** orchestrates durable execution with automatic retries
+- **MCP** provides standardized tool interfaces (swap providers without code changes)
+- **Logfire** instruments the entire request path for production observability
+
+Built for critical workflows where tasks can take minutes and failures are expensive.
 
 <p align="left">
   <img src="assets/architecture.png" alt="System Architecture" width="100%">
 </p>
 
-Production-ready agent architecture combining **Mistral's server-side stateful agents** with **Temporal's durable execution** and **MCP's standardized tool interface**. This setup handles long-running tasks with automatic retries and maintains conversation state across failures.
+## Evolution from Previous Work
+
+This extends my [durable agents with Temporal](https://temporal.io/code-exchange/mcp-temporal-durable-agents) project with:
+- **Stateful agents** – Mistral manages agent definitions and conversation history server-side (beta feature)
+- **Enhanced retries** – [HTTP retry mechanism](https://docs.temporal.io/ai-cookbook/http-retry-enhancement-python) distinguishes retriable vs. terminal failures
+- **API gateway** – FastAPI server triggers workflows and polls results for frontend clients
+- **Full observability** – Logfire traces capture MCP/FastAPI servers transactions, agent status, token usage, and retry behavior
+- **MCP tools** – Dedicated MCP server with Yahoo Finance integration
 
 ## Architecture
 
