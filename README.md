@@ -1,6 +1,6 @@
 # Durable Stateful Agents with Mistral + Temporal + MCP
 
-Here's the problem: LLM agents break on multi-step workflows. An API timeout halfway through kills all progress. Conversation state gets lost between calls. And writing manual retry logic? Brittle and painful to maintain.
+LLM agents can break on multi-step workflows. An API timeout halfway through kills all progress. Conversation state gets lost between calls. And writing manual retry logic is brittle and painful to maintain.
 
 This architecture addresses all of that:
 
