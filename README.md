@@ -1,6 +1,8 @@
 # Durable Stateful Agents with Mistral + Temporal + MCP
 
-LLM agents break on multi-step workflows. API timeouts kill progress. Conversation state gets lost. Manual retry logic is brittle. This architecture solves it:
+Here's the problem: LLM agents break on multi-step workflows. An API timeout halfway through kills all progress. Conversation state gets lost between calls. And writing manual retry logic? Brittle and painful to maintain.
+
+This architecture addresses all of that:
 
 - **Mistral Agent API** manages conversation state server-side (no history passing)
 - **Temporal** orchestrates durable execution with automatic retries
@@ -12,15 +14,22 @@ Built for critical workflows where tasks can take minutes and failures are expen
 <p align="left">
   <img src="assets/architecture.png" alt="System Architecture" width="100%">
 </p>
+
 **Production-grade agent orchestration for long-running tasks that don't fail.**
 
 ## Evolution from Previous Work
 
-This extends my [durable agents with Temporal](https://temporal.io/code-exchange/mcp-temporal-durable-agents) project with:
+Long-running LLM agent workflows can be subjected to failures, network issues, and third-party API exceptions. 
+In many situations, manual intervention is needed to identify issues and debug them. For production systems, this can be prohibitively expensive. 
+This is the main reason many companies rely on Temporal for orchestrating agents in production.
+
+The other challenge that can arise is agent status management and short memory for conversational agents.
+
+To address these challenges, I extended my previous [durable agents with Temporal](https://temporal.io/code-exchange/mcp-temporal-durable-agents) project with:
 - **Stateful agents** – Mistral manages agent definitions and conversation history server-side (beta feature)
 - **Enhanced retries** – [HTTP retry mechanism](https://docs.temporal.io/ai-cookbook/http-retry-enhancement-python) distinguishes retriable vs. terminal failures
 - **API gateway** – FastAPI server triggers workflows and polls results for frontend clients
-- **Full observability** – Logfire traces capture MCP/FastAPI servers transactions, agent status, token usage, and retry behavior
+- **Full observability** – Logfire traces capture MCP/FastAPI server transactions, agent status, token usage, and retry behavior
 - **MCP tools** – Dedicated MCP server with Yahoo Finance integration
 
 ## Architecture
