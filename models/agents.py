@@ -15,6 +15,7 @@ class AgentRunInputModel(BaseModel):
     id:                 str
     inputs:             str
     response_format:    ResponseFormatName | None = None
+    mcp_server_url:     str | None = None
 
 class MistralAgentStaticParams(BaseModel):
     model:              str
@@ -29,9 +30,6 @@ class MistralAgentStaticParams(BaseModel):
 
 class MistralAgentDynamicParams(BaseModel):
     handoffs:           List[str] | None = None
-
-class MistralAgentUpdateModel(AgentCreationModel, MistralAgentDynamicParams):
-    ...
 
 class MistralAgentParams(MistralAgentDynamicParams, MistralAgentStaticParams):
     ...

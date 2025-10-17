@@ -1,4 +1,4 @@
-from typing import Any, Dict, Literal
+from typing import Any, Dict, Literal, List
 from pydantic import BaseModel
 
 class AnalysisSummary(BaseModel):
@@ -25,13 +25,16 @@ class VerificationResult(BaseModel):
 
 class FinancialReportData(BaseModel):
     short_summary: str
-    """A short 2‑3 sentence executive summary."""
+    """A short 2-3 sentence executive summary highlighting key insights across price, fundamental, and risk analysis."""
 
     markdown_report: str
-    """The full markdown report."""
+    """The full markdown report synthesizing prices, fundamentals, and risk analyses."""
 
     follow_up_questions: list[str]
-    """Suggested follow‑up questions for further research."""
+    """Suggested follow-up questions for further research."""
+
+    key_metrics: dict[str, Any] | None = None
+    """Key metrics extracted from all agents (e.g., current_price, pe_ratio, volatility, risk_score)."""
 
 RESPONSE_FORMAT_REGISTRY = {
     "AnalysisSummary": AnalysisSummary,
@@ -41,6 +44,18 @@ RESPONSE_FORMAT_REGISTRY = {
 }
 
 ResponseFormatName = Literal[*tuple(RESPONSE_FORMAT_REGISTRY.keys())]
+
+class WriterAgentInputModel(BaseModel):
+    """Input for Writer Agent to synthesize prices, fundamentals, and risk analyses into a final report."""
+
+    prices_analysis: AnalysisSummary
+    """Price history, technical indicators, trading patterns, and market trends."""
+
+    fundamentals_analysis: AnalysisSummary
+    """Financial health, revenue trends, valuation metrics, and market position analysis."""
+
+    risk_analysis: AnalysisSummary
+    """Risk assessment, volatility metrics, factor exposures, and mitigation factors."""
 
 def _add_additional_properties_false(schema_dict: Dict[str, Any]) -> Dict[str, Any]:
     """Recursively add additionalProperties: False to all objects in schema."""
@@ -74,3 +89,13 @@ class FinancialReportWorkflowOutput(BaseModel):
     search_plan: FinancialSearchPlan
     report: FinancialReportData
     verification: VerificationResult
+    risk_analysis: AnalysisSummary
+    fundamentals_analysis: AnalysisSummary
+    price_analysis: AnalysisSummary
+
+def format_search_results(results: List[AnalysisSummary]) -> str:
+    """Format search results as clean, readable text for the agent."""
+    formatted = "# Analysis Results\n\n"
+    for i, result in enumerate(results, 1):
+        formatted += f"## Finding {i}\n{result.summary}\n\n"
+    return formatted.strip()

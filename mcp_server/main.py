@@ -1,12 +1,8 @@
-import contextlib
 from fastapi import FastAPI
 
-from mcp_server.financial_research_server import mcp as mcp_server
+from mcp_server.financial_research_server import mcp as mcp_financial_server
+from mcp_server.prices_analysis_server import mcp as prices_server
 
-@contextlib.asynccontextmanager
-async def lifespan(app_: FastAPI):
-    async with contextlib.AsyncExitStack() as stack:
-        await stack.enter_async_context(mcp_server.session_manager.run())
-        yield
-app = FastAPI(lifespan=lifespan)
-app.mount("/financials", mcp_server.streamable_http_app())
+app = FastAPI()
+app.mount("/financials", mcp_financial_server.sse_app())
+app.mount("/prices", prices_server.sse_app())

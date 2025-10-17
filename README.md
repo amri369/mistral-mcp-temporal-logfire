@@ -1,10 +1,34 @@
 # Durable Stateful Agents with Mistral + Temporal + MCP
 
+LLM agents can break on multi-step workflows. An API timeout halfway through kills all progress. Conversation state gets lost between calls. And writing manual retry logic is brittle and painful to maintain.
+
+This architecture addresses all of that:
+
+- **Mistral Agent API** manages conversation state server-side (no history passing)
+- **Temporal** orchestrates durable execution with automatic retries
+- **MCP** provides standardized tool interfaces (swap providers without code changes)
+- **Logfire** instruments the entire request path for production observability
+
+Built for critical workflows where tasks can take minutes and failures are expensive.
+
 <p align="left">
   <img src="assets/architecture.png" alt="System Architecture" width="100%">
 </p>
 
-Production-ready agent architecture combining **Mistral's server-side stateful agents** with **Temporal's durable execution** and **MCP's standardized tool interface**. This setup handles long-running tasks with automatic retries and maintains conversation state across failures.
+## Evolution from Previous Work
+
+Long-running LLM agent workflows can be subjected to failures, network issues, and third-party API exceptions. 
+In many situations, manual intervention is needed to identify issues and debug them. For production systems, this can be prohibitively expensive. 
+This is the main reason many companies rely on Temporal for orchestrating agents in production.
+
+The other challenge that can arise is agent status management and short memory for conversational agents.
+
+To address these challenges, I extended my previous [durable agents with Temporal](https://temporal.io/code-exchange/mcp-temporal-durable-agents) project with:
+- **Stateful agents** – Mistral manages agent definitions and conversation history server-side (beta feature)
+- **Enhanced retries** – [HTTP retry mechanism](https://docs.temporal.io/ai-cookbook/http-retry-enhancement-python) distinguishes retriable vs. terminal failures
+- **API gateway** – FastAPI server triggers workflows and polls results for frontend clients
+- **Full observability** – Logfire traces capture MCP/FastAPI server transactions, agent status, token usage, and retry behavior
+- **MCP tools** – Dedicated MCP server with Yahoo Finance integration
 
 ## Architecture
 
@@ -17,7 +41,7 @@ Production-ready agent architecture combining **Mistral's server-side stateful a
 **Key Design Decisions:**
 1. **Mistral hosts agent state server-side** – Unlike traditional stateless LLM APIs, Mistral's Agent API maintains agent definitions and conversation history on their servers. You register agents once, then interact via `agent_id`.
 2. **Temporal workflows orchestrate agent interactions** – Workflow state persists locally while Mistral manages agent and conversation state remotely. Workflows survive crashes and coordinate multi-step agent tasks.
-3. **Prompt registry via MCP server** – Temporal activities create agents with instructions fetched from a local MCP server. Instruction prompts are separated from code.
+3. **Prompt and tools access via MCP server** – Temporal activities create agents with instructions fetched from a local MCP server. Instruction prompts are separated from code. Agents can run available tools server side.
 4. **FastAPI orchestrates requests** – Receives user queries, triggers Temporal workflows, and polls workflow results using Temporal query handles.
 5. **Logfire instruments the entire request path** – Captures FastAPI route traces, Mistral API calls with token usage, and correlates them in a unified trace view.
 
@@ -55,22 +79,28 @@ export PYTHONPATH=.
 uv run uvicorn mcp_server.main:app --reload --port 9000
 ```
 
+To inspect and interact with the server, run:
+```
+export PYTHONPATH=.
+mcp dev mcp_server/financial_research_server.py
+```
+
 **Terminal 2: Temporal Dev Server**
 ```bash
 temporal server start-dev
 ```
 
-**Terminal 3: FastAPI Gateway**
-```bash
-export PYTHONPATH=.
-uv run uvicorn api.main:app --reload
-```
-
-**Terminal 4: Temporal Worker**
+**Terminal 3: Temporal Worker**
 Executes workflow and activity tasks.
 ```bash
 export PYTHONPATH=.
 uv run --env-file .env tasks/worker.py
+```
+
+**Terminal 4: FastAPI Gateway**
+```bash
+export PYTHONPATH=.
+uv run uvicorn api.main:app --reload
 ```
 
 ### 3. Test the Agent
@@ -106,6 +136,6 @@ This demonstrates how Temporal's durable execution handles transient failures wi
 
 **Temporal** handles transient failures (API timeouts, rate limits) with automatic retries and orchestrates complex multi-agent workflows. Workflow state persists across process restarts.
 
-**MCP** decouples tool implementation from agent logic. Swap tool providers without changing agent code. Standardized interface for tool discovery and execution.
+**MCP** decouples tool implementation from agent logic. Swap tool providers without changing agent code. Standardized interface for tool discovery and execution, and prompts.
 
 **Logfire** provides a unified view of workflow executions, LLM calls (with prompts, completions, token counts), and FastAPI request lifecycle—critical for debugging production issues.

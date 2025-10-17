@@ -1,11 +1,13 @@
 from typing import Any
 
-from mcp.client.streamable_http import streamablehttp_client
+from mcp.client.sse import sse_client
 from mcp import ClientSession
 from mistralai import Mistral, MessageOutputEntry, Agent
+from mistralai.extra.run.context import RunContext
+from mistralai.extra.mcp.sse import MCPClientSSE, SSEServerParams
 import logfire
 
-from models.agents import MistralAgentParams, AgentCreationModel, AgentRunInputModel, MistralAgentUpdateModel
+from models.agents import MistralAgentParams, AgentCreationModel, AgentRunInputModel
 from models.structured_output import get_mistral_response_format, RESPONSE_FORMAT_REGISTRY
 
 from config import settings
@@ -21,13 +23,11 @@ if settings.logfire_token:
     logfire = logfire.with_settings(custom_scope_suffix='mistral_agents')
 
 async def get_prompt(server_url: str, prompt_name: str) -> str:
-    async with streamablehttp_client(server_url) as (read_stream, write_stream, get_session_id):
+    async with sse_client(server_url) as (read_stream, write_stream):
         async with ClientSession(read_stream, write_stream) as session:
             await session.initialize()
 
-            session_id = get_session_id()
-
-            logger.info(f"Connected with session ID: {session_id}")
+            logger.info(f"Connected to MCP server: {server_url}")
 
             prompts = await session.list_prompts()
 
@@ -134,6 +134,65 @@ async def start_conversation_async(params: AgentRunInputModel) -> Any:
             span.record_exception(e)
             raise
 
-async def update_agent_async(params: MistralAgentUpdateModel) -> None:
+async def run_async(params: AgentRunInputModel) -> Any:
     client = get_client()
-    await client.beta.agents.update_async(agent_id=params.id, handoffs=params.handoffs)
+    with logfire.span(
+            "Mistral Agents trace: Agent workflow",
+            agent_id=params.id,
+            _tags=["LLM"],
+    ) as span:
+        try:
+            try:
+                agent = await get_agent_async(AgentCreationModel(id=params.id))
+            except Exception as e:
+                logger.error(f"Failed to fetch agent metadata: {e}")
+                raise
+
+            async with RunContext(
+                agent_id=agent.id,
+                continue_on_fn_error=False,
+            ) as run_ctx:
+                mcp_client = MCPClientSSE(SSEServerParams(url=params.mcp_server_url))
+                print("MCP Server URL")
+                print(params.mcp_server_url)
+                await run_ctx.register_mcp_clients(mcp_clients=[mcp_client])
+
+                response = await client.beta.conversations.run_async(
+                    inputs=params.inputs,
+                    run_ctx=run_ctx,
+                )
+
+                result = None
+                for output in response.output_entries:
+                    if isinstance(output, MessageOutputEntry):
+                        result = output
+                        break
+
+                if not result:
+                    logger.error("Failed to find output message")
+                    raise
+
+                model = result.model
+                logfire.info(
+                    f"Responses API with {model}",
+                    **{
+                        'gen_ai.system': 'mistral',
+                        'gen_ai.agent.id': params.id,
+                        'gen_ai.agent.description': agent.description,
+                        'gen_ai.agent.name': agent.name,
+                        'gen_ai.system_instructions': agent.instructions,
+                        'gen_ai.response.model': model,
+                        'gen_ai.conversation.id': response.conversation_id,
+                        'gen_ai.input.messages': params.inputs,
+                        'gen_ai.output.messages': response.output_entries,
+                        'gen_ai.output.type': params.response_format
+                    }
+                )
+
+                model_class = RESPONSE_FORMAT_REGISTRY[params.response_format]
+                response = model_class.model_validate_json(result.content)
+                return response
+
+        except Exception as e:
+            span.record_exception(e)
+            raise
