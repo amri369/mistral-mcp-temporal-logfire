@@ -1,3 +1,11 @@
+Following my previous project about [durable agents with Temporal](https://temporal.io/code-exchange/mcp-temporal-durable-agents), I decided to create an enhanced version. 
+What's new:
+- I use Mistral stateful Agents API. This is a very interesting feature (still in beta) that manages agents status and memory server side
+- Tracing agents status and transactions logging with Logfire for a better observability
+- Add a [Temporal retry mechanism](https://docs.temporal.io/ai-cookbook/http-retry-enhancement-python) to only consider retriable failures during agents execution
+- Spinoff a FastAPI server to run Temporal workflows and poll results (very useful for Frontend clients)
+- Add tools to a dedicated MCP server using Yahoo Finance API
+
 # Durable Stateful Agents with Mistral + Temporal + MCP
 
 <p align="left">
