@@ -15,8 +15,6 @@ Built for critical workflows where tasks can take minutes and failures are expen
   <img src="assets/architecture.png" alt="System Architecture" width="100%">
 </p>
 
-**Production-grade agent orchestration for long-running tasks that don't fail.**
-
 ## Evolution from Previous Work
 
 Long-running LLM agent workflows can be subjected to failures, network issues, and third-party API exceptions. 
