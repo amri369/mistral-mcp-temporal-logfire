@@ -169,7 +169,7 @@ async def run_async(params: AgentRunInputModel) -> Any:
                         break
 
                 if not result:
-                    logger.error(f"Failed to find output message")
+                    logger.error("Failed to find output message")
                     raise
 
                 model = result.model
