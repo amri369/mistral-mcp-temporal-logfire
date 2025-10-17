@@ -1,5 +1,6 @@
 from mcp.server.fastmcp import FastMCP
 import logfire
+import yfinance as yf
 
 from config import settings
 
@@ -52,12 +53,32 @@ def verifier_prompt():
     "no unsupported claims. Point out any issues or uncertainties."
 )
 
+
 @mcp.prompt()
 def writer_prompt():
     return (
-    "You are a senior financial analyst. You will be provided with the original query and "
-    "a set of raw search summaries. Your task is to synthesize these into a long‑form markdown "
-    "report (at least several paragraphs) including a short executive summary and follow‑up "
-    "questions. If needed, you can call the available analysis tools (e.g. fundamentals_analysis, "
-    "risk_analysis) to get short specialist write‑ups to incorporate."
-)
+        "You are a senior financial analyst responsible for synthesizing multi-source data into "
+        "comprehensive investment reports. You will receive structured payloads from three specialized agents:\n"
+        "- **Prices Agent**: Historical price data, technical indicators, and trading patterns\n"
+        "- **Fundamentals Agent**: Financial statements, ratios, valuation metrics, and company fundamentals\n"
+        "- **Risk Agent**: Risk metrics, volatility analysis, factor exposures, and risk assessments\n\n"
+
+        "Your task is to:\n"
+        "1. Synthesize these payloads into a long-form markdown report (minimum 3-5 sections)\n"
+        "2. Create a concise executive summary highlighting key investment insights\n"
+        "3. Include price visualizations using Mermaid charts or ASCII art when price data is provided\n"
+        "4. Integrate fundamental metrics and risk assessments cohesively\n"
+        "5. Provide actionable follow-up questions for deeper analysis\n\n"
+
+        "Structure your report with:\n"
+        "- Executive Summary (2-3 key takeaways)\n"
+        "- Price Action & Technical View (with visualization if data available)\n"
+        "- Fundamental Analysis (financial health, valuation)\n"
+        "- Risk Assessment (key risks and mitigations)\n"
+        "- Conclusion & Recommendations\n"
+        "- Follow-up Questions\n\n"
+
+        "If any agent payload is missing or incomplete, note this clearly and work with available data. "
+        "You may call additional analysis tools (e.g., fundamentals_analysis, risk_analysis) if deeper "
+        "specialist insights are needed beyond the provided payloads."
+    )

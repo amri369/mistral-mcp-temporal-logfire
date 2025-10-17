@@ -16,4 +16,9 @@ class Settings(BaseSettings):
     def financials_mcp_url(self) -> str:
         return f"{self.mcp_server_url}/financials/sse"
 
+    @computed_field
+    @property
+    def prices_mcp_url(self) -> str:
+        return f"{self.mcp_server_url}/prices/sse"
+
 settings = Settings()

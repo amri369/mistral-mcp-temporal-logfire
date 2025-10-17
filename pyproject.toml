@@ -7,6 +7,7 @@ requires-python = "==3.13.1"
 authors = [{ name = "Mohamed Amri", email = "amri369@gmail.com"}]
 
 dependencies = [
+    "authlib>=1.6.5",
     "fastapi==0.115.8",
     "logfire[fastapi]==4.3.6",
     "mcp[cli]>=1.12.4",
@@ -16,6 +17,7 @@ dependencies = [
     "ruff==0.12.8",
     "temporalio==1.16.0",
     "uvicorn==0.35.0",
+    "yfinance>=0.2.66",
 ]
 
 [tool.uv.workspace]

@@ -3,6 +3,8 @@ from typing import Any
 from mcp.client.sse import sse_client
 from mcp import ClientSession
 from mistralai import Mistral, MessageOutputEntry, Agent
+from mistralai.extra.run.context import RunContext
+from mistralai.extra.mcp.sse import MCPClientSSE, SSEServerParams
 import logfire
 
 from models.agents import MistralAgentParams, AgentCreationModel, AgentRunInputModel
@@ -127,6 +129,69 @@ async def start_conversation_async(params: AgentRunInputModel) -> Any:
             model_class = RESPONSE_FORMAT_REGISTRY[params.response_format]
             response = model_class.model_validate_json(response)
             return response
+
+        except Exception as e:
+            span.record_exception(e)
+            raise
+
+async def run_async(params: AgentRunInputModel) -> Any:
+    client = get_client()
+    with logfire.span(
+            "Mistral Agents trace: Agent workflow",
+            agent_id=params.id,
+            _tags=["LLM"],
+    ) as span:
+        try:
+            try:
+                agent = await get_agent_async(AgentCreationModel(id=params.id))
+            except Exception as e:
+                logger.error(f"Failed to fetch agent metadata: {e}")
+                raise
+
+            async with RunContext(
+                agent_id=agent.id,
+                continue_on_fn_error=False,
+            ) as run_ctx:
+                mcp_client = MCPClientSSE(SSEServerParams(url=params.mcp_server_url))
+                print("MCP Server URL")
+                print(params.mcp_server_url)
+                await run_ctx.register_mcp_clients(mcp_clients=[mcp_client])
+
+                response = await client.beta.conversations.run_async(
+                    inputs=params.inputs,
+                    run_ctx=run_ctx,
+                )
+
+                result = None
+                for output in response.output_entries:
+                    if isinstance(output, MessageOutputEntry):
+                        result = output
+                        break
+
+                if not result:
+                    logger.error(f"Failed to find output message")
+                    raise
+
+                model = result.model
+                logfire.info(
+                    f"Responses API with {model}",
+                    **{
+                        'gen_ai.system': 'mistral',
+                        'gen_ai.agent.id': params.id,
+                        'gen_ai.agent.description': agent.description,
+                        'gen_ai.agent.name': agent.name,
+                        'gen_ai.system_instructions': agent.instructions,
+                        'gen_ai.response.model': model,
+                        'gen_ai.conversation.id': response.conversation_id,
+                        'gen_ai.input.messages': params.inputs,
+                        'gen_ai.output.messages': response.output_entries,
+                        'gen_ai.output.type': params.response_format
+                    }
+                )
+
+                model_class = RESPONSE_FORMAT_REGISTRY[params.response_format]
+                response = model_class.model_validate_json(result.content)
+                return response
 
         except Exception as e:
             span.record_exception(e)

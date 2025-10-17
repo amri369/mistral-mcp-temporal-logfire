@@ -55,22 +55,28 @@ export PYTHONPATH=.
 uv run uvicorn mcp_server.main:app --reload --port 9000
 ```
 
+To inspect and interact with the server, run:
+```
+export PYTHONPATH=.
+mcp dev mcp_server/financial_research_server.py
+```
+
 **Terminal 2: Temporal Dev Server**
 ```bash
 temporal server start-dev
 ```
 
-**Terminal 3: FastAPI Gateway**
-```bash
-export PYTHONPATH=.
-uv run uvicorn api.main:app --reload
-```
-
-**Terminal 4: Temporal Worker**
+**Terminal 3: Temporal Worker**
 Executes workflow and activity tasks.
 ```bash
 export PYTHONPATH=.
 uv run --env-file .env tasks/worker.py
+```
+
+**Terminal 4: FastAPI Gateway**
+```bash
+export PYTHONPATH=.
+uv run uvicorn api.main:app --reload
 ```
 
 ### 3. Test the Agent
