@@ -1,6 +1,5 @@
 from mcp.server.fastmcp import FastMCP
 import logfire
-import yfinance as yf
 
 from config import settings
 

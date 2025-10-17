@@ -88,7 +88,10 @@ def test_workflow_output_valid():
             markdown_report="Report",
             follow_up_questions=[]
         ),
-        verification=VerificationResult(verified=True, issues="None")
+        verification=VerificationResult(verified=True, issues="None"),
+        risk_analysis=AnalysisSummary(summary="Risk Analysis"),
+        fundamentals_analysis=AnalysisSummary(summary="Fundamentals Analysis"),
+        price_analysis=AnalysisSummary(summary="Price Analysis"),
     )
     assert output.verification.verified is True
     assert len(output.search_plan.searches) == 0
