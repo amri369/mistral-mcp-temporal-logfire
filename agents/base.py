@@ -1,6 +1,6 @@
 from typing import Any
 
-from mcp.client.streamable_http import streamablehttp_client
+from mcp.client.sse import sse_client
 from mcp import ClientSession
 from mistralai import Mistral, MessageOutputEntry, Agent
 import logfire
@@ -21,13 +21,11 @@ if settings.logfire_token:
     logfire = logfire.with_settings(custom_scope_suffix='mistral_agents')
 
 async def get_prompt(server_url: str, prompt_name: str) -> str:
-    async with streamablehttp_client(server_url) as (read_stream, write_stream, get_session_id):
+    async with sse_client(server_url) as (read_stream, write_stream):
         async with ClientSession(read_stream, write_stream) as session:
             await session.initialize()
 
-            session_id = get_session_id()
-
-            logger.info(f"Connected with session ID: {session_id}")
+            logger.info(f"Connected to MCP server: {server_url}")
 
             prompts = await session.list_prompts()
 

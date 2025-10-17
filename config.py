@@ -14,6 +14,6 @@ class Settings(BaseSettings):
     @computed_field
     @property
     def financials_mcp_url(self) -> str:
-        return f"{self.mcp_server_url}/financials/mcp"
+        return f"{self.mcp_server_url}/financials/sse"
 
 settings = Settings()
