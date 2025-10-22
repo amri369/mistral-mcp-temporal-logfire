@@ -8,12 +8,12 @@ from config import settings
 load_dotenv()
 
 
-def load_report(file_path: str = "report.md") -> str:
+def load_report(file_path: str) -> str:
     with open(file_path, "r", encoding="utf-8") as f:
         return f.read()
 
 
-def load_web_search_results(file_path: str = "web_search_results.txt") -> list[str]:
+def load_web_search_results(file_path: str) -> list[str]:
     with open(file_path, "r", encoding="utf-8") as f:
         content = f.read()
 
@@ -32,8 +32,8 @@ def main():
         }
     )
 
-    report_content = load_report("report.md")
-    retrieval_context = load_web_search_results("web_search_results.txt")
+    report_content = load_report("examples/report.md")
+    retrieval_context = load_web_search_results("examples/web_search_results.txt")
 
     faithfulness = FaithfulnessMetric(
         threshold=0.7,
