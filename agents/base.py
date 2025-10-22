@@ -15,12 +15,14 @@ from logger import get_logger
 
 logger = get_logger(__name__)
 
-if settings.logfire_token:
+try:
     logfire.configure(
         token=settings.logfire_token,
         service_name="mistral-mcp-temporal",
     )
     logfire = logfire.with_settings(custom_scope_suffix='mistral_agents')
+except Exception as e:
+    logger.warning(e)
 
 async def get_prompt(server_url: str, prompt_name: str) -> str:
     async with sse_client(server_url) as (read_stream, write_stream):

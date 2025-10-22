@@ -92,6 +92,7 @@ def test_workflow_output_valid():
         risk_analysis=AnalysisSummary(summary="Risk Analysis"),
         fundamentals_analysis=AnalysisSummary(summary="Fundamentals Analysis"),
         price_analysis=AnalysisSummary(summary="Price Analysis"),
+        search_results=[AnalysisSummary(summary="Web search result")],
     )
     assert output.verification.verified is True
     assert len(output.search_plan.searches) == 0
