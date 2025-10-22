@@ -92,6 +92,7 @@ class FinancialReportWorkflowOutput(BaseModel):
     risk_analysis: AnalysisSummary
     fundamentals_analysis: AnalysisSummary
     price_analysis: AnalysisSummary
+    search_results: List[AnalysisSummary]
 
 def format_search_results(results: List[AnalysisSummary]) -> str:
     """Format search results as clean, readable text for the agent."""

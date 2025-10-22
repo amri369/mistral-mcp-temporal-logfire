@@ -92,7 +92,7 @@ class FinancialResearchWorkflow:
 
         search_results = await asyncio.gather(*search_activities)
         search_results = [AnalysisSummary(**result) for result in search_results]
-        search_results = format_search_results(search_results)
+        search_results_formatted = format_search_results(search_results)
         logger.info("Search agents completed")
 
         logger.info("Risk and fundamental agents started")
@@ -100,7 +100,7 @@ class FinancialResearchWorkflow:
             start_conversation_activity,
             AgentRunInputModel(
                 id=risk_agent.id,
-                inputs=search_results,
+                inputs=search_results_formatted,
                 response_format=AGENTS_PARAMS["RISK"].response_format,
                 mcp_server_url=AGENTS_PARAMS["RISK"].mcp_server_url,
             ),
@@ -110,7 +110,7 @@ class FinancialResearchWorkflow:
             start_conversation_activity,
             AgentRunInputModel(
                 id=fundamental_agent.id,
-                inputs=search_results,
+                inputs=search_results_formatted,
                 response_format=AGENTS_PARAMS["FUNDAMENTALS"].response_format,
                 mcp_server_url=AGENTS_PARAMS["FUNDAMENTALS"].mcp_server_url,
             ),
@@ -173,6 +173,7 @@ class FinancialResearchWorkflow:
             risk_analysis=risk_result,
             fundamentals_analysis=fundamentals_result,
             price_analysis=price_result,
+            search_results=search_results
         )
 
         return self.final_report

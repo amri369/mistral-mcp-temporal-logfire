@@ -10,12 +10,6 @@ from logger import get_logger
 
 logger = get_logger(__name__)
 
-if settings.logfire_token:
-    logfire.configure(
-        token=settings.logfire_token,
-        service_name="mistral-mcp-temporal",
-    )
-
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     _app.state.temporal_client = await get_temporal_client()
@@ -29,4 +23,9 @@ app = FastAPI(
 )
 app.include_router(agents_router, prefix="/agents", tags=["Mistral Agents"])
 
-logfire.instrument_fastapi(app=app)
+if settings.logfire_token:
+    logfire.configure(
+        token=settings.logfire_token,
+        service_name="mistral-mcp-temporal",
+    )
+    logfire.instrument_fastapi(app=app)
