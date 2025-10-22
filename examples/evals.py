@@ -58,7 +58,7 @@ def main():
     ]
 
     print("Running DeepEval: Faithfulness & Bias Metrics")
-    print(f"📄 Report: report.md")
+    print("📄 Report: report.md")
     print(f"🔍 Context: web_search_results.txt ({len(retrieval_context)} chunks)\n")
 
     results = evaluate(
