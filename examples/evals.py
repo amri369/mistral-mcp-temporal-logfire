@@ -66,7 +66,7 @@ def main():
         [faithfulness, bias]
     )
 
-    print(f"\n✅ Evaluation Complete!")
+    print("\n✅ Evaluation Complete!")
     print(f"Results: {results}")
 
 if __name__ == "__main__":

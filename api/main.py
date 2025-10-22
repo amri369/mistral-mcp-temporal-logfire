@@ -23,9 +23,11 @@ app = FastAPI(
 )
 app.include_router(agents_router, prefix="/agents", tags=["Mistral Agents"])
 
-if settings.logfire_token:
+try:
     logfire.configure(
         token=settings.logfire_token,
         service_name="mistral-mcp-temporal",
     )
     logfire.instrument_fastapi(app=app)
+except Exception as e:
+    logger.warning(e)
