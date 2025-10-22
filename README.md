@@ -64,6 +64,7 @@ User Request → FastAPI → Temporal Workflow → Mistral Agent API (stateful)
 - Python 3.11+ with `uv`
 - Temporal CLI (`brew install temporal`)
 - Mistral API key
+- Logfire API key
 
 ### 1. Environment Setup
 ```bash
